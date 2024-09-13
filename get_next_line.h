@@ -3,7 +3,7 @@
 
 # include <unistd.h>
 # include <stdlib.h>
-# define BUFFER_SIZE 5
+//# define BUFFER_SIZE 10
 
 char	*get_next_line(int fd);
 

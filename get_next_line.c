@@ -3,143 +3,150 @@
 #include <string.h>
 #include <stdlib.h>
 
-int	contains(const char *str, int c)
+char	*append_to(char *statica_str, char *buff)
 {
-	while (*str)
+	int		i;
+	char	*new_str;
+
+	if (!statica_str)
 	{
-		if (*str == c)
+		statica_str= (char *)malloc(sizeof(char));
+		if (!statica_str)
+			return (NULL);
+		statica_str[0] = '\0';
+	}
+	if (!statica_str || !buff)
+		return (NULL);
+	new_str = malloc((strlen(statica_str) + strlen(buff) + 1) * sizeof(char));
+	if (!new_str)
+		return (NULL);
+	i = 0;
+	while (statica_str[i])
+	{
+		new_str[i] = statica_str[i];
+		i++;
+	}
+	i = 0;
+	while (buff[i])
+	{
+		new_str[strlen(statica_str) + i] = buff[i];
+		i++;
+	}
+	new_str[strlen(statica_str) + strlen(buff)] = '\0';
+	free(statica_str);
+	return (new_str);
+}
+
+char	*get_line_n(char *static_str)
+{
+	int		len;
+	char	*new_line;
+
+	if (!static_str || static_str[0] == '\0')
+		return (free(static_str), NULL);
+	len = 0;
+	while (static_str[len] && static_str[len] != '\n')
+		len++;
+	if (static_str[len] == '\n')
+		len++;
+	new_line = (char *)malloc((len + 1) * sizeof(char));
+	if (!new_line)
+		return (NULL);
+	len = 0;
+	while (static_str[len] && static_str[len] != '\n')
+	{
+		new_line[len] = static_str[len];
+		len++;
+	}
+	if (static_str[len] == '\n')
+	{
+		new_line[len] = '\n';
+		len++;
+	}
+	new_line[len] = '\0';
+	return (new_line);
+}
+
+int	contains(char *string, int c)
+{
+	int	i;
+
+	if (!string)
+		return (0);
+	i = 0;
+	while (string[i])
+	{
+		if (string[i] == (char)c)
 			return (1);
-		str++;
+		i++;
 	}
 	return (0);
 }
 
-int	print_str(const char *str)
+char	*get_line__(char **statica, int fd)
 {
-	int	has_new_line = 0;
-	for (size_t i = 0; i < strlen(str); i++)
-	{
-		if (str[i] == '\n')
-		{
-			printf("Has a new line at %zu\n", i);
-			has_new_line = 1;
-		}
-		printf("%zu - %c ", i, str[i]);
-	}
-	printf("\n");
-	return (has_new_line);
-}
-
-int	append_buff_to_line(char **line, char *buff, int bytes_read)
-{
-	int	len;
+	int		bytes_read;
+	char	buff[BUFFER_SIZE + 1];
 	char	*new_line;
 
-	(void)bytes_read;
-	//printf("\nWITHIN THE APPEND FUNC\n");
-	print_str(buff);
-	len = 0;
-	while (buff[len])
+	bytes_read = 1;
+	while (!contains(*statica, '\n') && bytes_read != 0)
 	{
-		if (buff[len] == '\n')
-		{
-			len++;
-			break;
-		}
-		len++;
+		bytes_read = read(fd, buff, BUFFER_SIZE);
+		if (bytes_read == -1)
+			return (free(*statica), NULL);
+		buff[bytes_read] = '\0';
+		if (buff[0] != '\0')
+			*statica = append_to(*statica, buff);
 	}
-	//printf("COMPUTED LEN OF BUFF %d\n", len);
-	//printf("LENGTH OF LINE BEFORE: %zu\n", strlen(*line));
-	print_str(*line);
-	//SAVE COPY line before realloc OR YOU'LL LOSE IT'S CONTENT !!!!!!!!!!!!!
-	char	temp[strlen(*line) + 1];
-	temp[strlen(*line)] = '\0';
-	strlcpy(temp, *line, strlen(*line) + 1);
-	new_line = (char *) realloc(*line, (strlen(*line) + len + 1) * sizeof(char));
-	if (!new_line)
-		return (0);
+	new_line = get_line_n(*statica);
+	//printf("CURRENT LINE : %s\n", new_line);
+	//printf("CURRENT STATICA : %s\n", *statica); //TODO: Print Statica
+	return (new_line);
+}
 
-	//printf("TEMP VARIABLE \n");
-	//print_str(temp);
-	//printf("LENGTH OF TEMP VARIABLE: %zu\n", strlen(temp));
-	int i = 0;
-	if (strlen(temp) > 0)
-	{
-		//printf("LINE READY TO COPY\n");
-		//COPY LINE TO NEW_LINE
-		while (temp[i])
-		{
-			new_line[i] = temp[i];
-			i++;
-		}
-		//printf("COPIED LINE TO TEMP VARIABLE: %s\n", temp);
-	}
-	
-	//APPEND BUFF TO NEW LINE
-	printf("CURRENT BUFFER\n");
-	print_str(buff);
+char	*ft_getrest(char **full_str)
+{
+	int		i;
+	int		j;
+	char	*restof;
+
 	i = 0;
-	while (i < len)
+	/*
+	if (*full_str)
 	{
-		new_line[strlen(temp) + i] = buff[i];
+		printf("Is alive --> STATICA %s\n", *full_str);
+	}else{
+		printf("Is not alive --> STATICA %s\n", *full_str);
+		return (NULL);
+	}*/
+	while ((*full_str)[i] && (*full_str)[i] != '\n')
 		i++;
-	}
-	new_line[strlen(temp) + i] = '\0';
-	*line = new_line;
-	printf("CURRENT LINE\n");
-	print_str(*line);
-	//printf("Bytes_read %d - Computed len %d\n", bytes_read, len);
-	printf("This the current value of LINE %s - LENGHT %lu \n", *line, strlen(*line));
-	return (1);
+	if (!(*full_str)[i])
+		return (free(*full_str), NULL);
+	restof = (char *)malloc(sizeof(char) * (strlen(*full_str) - i + 1));
+	if (!restof)
+		return (NULL);
+	i++;
+	j = 0;
+	while ((*full_str)[i])
+		restof[j++] = (*full_str)[i++];
+	restof[j] = '\0';
+	free(*full_str);
+	return (restof);
 }
 
 char	*get_next_line(int fd)
 {
-	static char		*line;	
-	char		buff[BUFFER_SIZE + 1];
-	int			bytes_read;
+	static char	*staticca;
+	char		*line;
 
-	line = (char *) malloc(1 * sizeof(char));
+	line = get_line__(&staticca, fd);
 	if (!line)
 		return (NULL);
-	line[0] = '\0';
-	while (1)
-	{
-		//printf("::::::::::::IM ITERATING\n");
-		bytes_read = read(fd, buff, BUFFER_SIZE);
-		//printf("Bytes read %d\n", bytes_read);
-		if (bytes_read == -1)
-		       	return (free(line), NULL);
-			//return (printf("read functions FAIL\n"), free(line), NULL);
-		if (!bytes_read)
-		{
-			//printf("Leaving the function Loop\n");
-			if (line[0] == '\0')
-				return (free(line), NULL);
-			break;
-		}
-		buff[bytes_read] = '\0';
-		//print_str(buff);
-		if (!append_buff_to_line(&line, buff, bytes_read))
-		{
-			//printf("::: REALLOC ERROR\n");
-			return (free(line), NULL);
-		}
-		if (contains(line, '\n'))
-			break;
-	}
-	//printf("::::::::::::RETURNING %s\n", line);
+	//printf("CURRENT STATICA --- 2: %s\n", staticca);
+	staticca = ft_getrest(&staticca);
+	
+	//printf("STATICA AFTER --- 2_1: %s\n", staticca);
 	return (line);
 }
-/*for (int i= 0; i < strlen(buff); i++)
-  {
-  if (buff[i] == '\n')
-  printf("Found a new line\n");
-  if (buff[i] == '\0')
-  printf("Found EOF\n");
-  printf("%d - %c ", i, buff[i]);
-  }
-  printf("\n");
-  }
-  */
-

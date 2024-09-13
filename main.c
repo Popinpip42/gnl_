@@ -15,12 +15,11 @@ void read_file(const char *file_path) {
 	char *line_;
 	int i = 1;
 	while ((line_ = get_next_line(fd)) != NULL) {
-		printf(":::: LINE READ AND NOT NULL\n");
-		printf("%d - %s\n", i, line_);
+		//printf(":::: LINE READ AND NOT NULL\n");
+		printf("%d - %s", i, line_);
 		i++;
 		free(line_);
 	}
-
 	close(fd);
 }
 
