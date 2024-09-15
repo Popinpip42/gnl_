@@ -1,4 +1,4 @@
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 char	*get_remaining(char **buffer)
 {
@@ -63,21 +63,21 @@ char	*get_line_(char **buffer, int fd)
 
 char	*get_next_line(int fd)
 {
-	static char	*statica;
+	static char	*statica[1024];
 	char		*line;
 	char		*remaining;
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
-	line = get_line_(&statica, fd);
+	line = get_line_(&(statica[fd]), fd);
 	if (!line)
 	{
-		free(statica);
-		statica = NULL;
+		free(statica[fd]);
+		statica[fd] = NULL;
 		return (NULL);
 	}
-	remaining = get_remaining(&statica);
-	free(statica);
-	statica = remaining;
+	remaining = get_remaining(&(statica[fd]));
+	free(statica[fd]);
+	statica[fd] = remaining;
 	return (line);
 }
