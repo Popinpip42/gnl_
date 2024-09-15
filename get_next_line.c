@@ -3,71 +3,79 @@
 #include <string.h>
 #include <stdlib.h>
 
-char	*get_line_n(char *static_str)
+char	*get_remaining(char **buffer)
 {
-	int		len;
-	char	*new_line;
+	char	*newline_pos;
+	char	*remaining;
 
-	if (!static_str || static_str[0] == '\0')
+	if (!*buffer)
 		return (NULL);
-	len = 0;
-	while (static_str[len] && static_str[len] != '\n')
-		len++;
-	if (static_str[len] == '\n')
-		len++;
-	new_line = (char *)malloc((len + 1) * sizeof(char));
-	if (!new_line)
+	newline_pos = ft_strchr(*buffer, '\n');
+	if (!newline_pos)
 		return (NULL);
-	len = 0;
-	while (static_str[len] && static_str[len] != '\n')
-	{
-		new_line[len] = static_str[len];
-		len++;
-	}
-	if (static_str[len] == '\n')
-	{
-		new_line[len] = '\n';
-		len++;
-	}
-	new_line[len] = '\0';
-	return (new_line);
+	newline_pos++;
+	remaining = ft_strdup(newline_pos);
+	return (remaining);
 }
 
-char	*get_line__(char **statica, int fd)
+char	*extract_line(char *buffer)
+{
+	int		len;
+	char	*line;
+	int		i;
+
+	len = 0;
+	while (buffer[len] && buffer[len] != '\n')
+		len++;
+	if (buffer[len] == '\n')
+		len++;
+	line = (char *)malloc((len + 1) * sizeof(char));
+	if (!line)
+		return (NULL);
+	i = -1;
+	while (i++ < len)
+		line[i] = buffer[i];
+	line[len] = '\0';
+	return (line);
+}
+
+char	*get_line_(char **buffer, int fd)
 {
 	int		bytes_read;
-	char	buff[BUFFER_SIZE + 1];
+	char	temp_buff[BUFFER_SIZE + 1];
 	char	*new_line;
 
 	bytes_read = 1;
-	while (bytes_read > 0 && !contains(*statica, '\n'))
+	while (bytes_read > 0 && !contains(*buffer, '\n'))
 	{
-		bytes_read = read(fd, buff, BUFFER_SIZE);
+		bytes_read = read(fd, temp_buff, BUFFER_SIZE);
 		if (bytes_read < 0)
 			return (NULL);
-		buff[bytes_read] = '\0';
-		if (buff[0] != '\0')
-			*statica = append_to(*statica, buff);
+		temp_buff[bytes_read] = '\0';
+		if (temp_buff[0] != '\0')
+			*buffer = append_to(*buffer, temp_buff);
 	}
-	new_line = get_line_n(*statica);
+	if (!(*buffer) || *buffer[0] == '\0')
+		return (NULL);
+	new_line = extract_line(*buffer);
 	return (new_line);
 }
 
 char	*get_next_line(int fd)
 {
-	static char	*staticca;
+	static char	*statica;
 	char		*line;
-	char		*rest;
+	char		*remaining;
 
-	line = get_line__(&staticca, fd);
+	line = get_line_(&statica, fd);
 	if (!line)
 	{
-		free(staticca);
-		staticca = NULL;
+		free(statica);
+		statica = NULL;
 		return (NULL);
 	}
-	rest = ft_getrest(&staticca);
-	free(staticca);
-	staticca = rest;
+	remaining = get_remaining(&statica);
+	free(statica);
+	statica = remaining;
 	return (line);
 }

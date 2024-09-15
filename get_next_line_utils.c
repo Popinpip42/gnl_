@@ -1,81 +1,84 @@
 #include "get_next_line.h"
 
-size_t	ft_strlen(const char *s)
+char	*ft_strchr(const char *s, int c)
+{
+	while (*s)
+	{
+		if (*s == (char) c)
+			return ((char *)s);
+		s++;
+	}
+	if ((char)c == '\0')
+		return ((char *) s);
+	return (NULL);
+}
+
+char	*ft_strdup(const char *s)
+{
+	char	*new_str;
+	int		i;
+
+	new_str = (char *)malloc(ft_strlen(s) * sizeof(char) + 1);
+	if (!new_str)
+		return (NULL);
+	i = 0;
+	while (s[i])
+	{
+		new_str[i] = s[i];
+		i++;
+	}
+	new_str[i] = '\0';
+	return (new_str);
+}
+
+size_t	ft_strlen(const char *str)
 {
 	int	counter;
 
 	counter = 0;
-	while (s[counter])
+	while (str[counter])
 		counter++;
 	return (counter);
 }
 
-int	contains(char *stri, int c)
+int	contains(const char *str, int c)
 {
 	int	i;
 
-	if (!stri)
+	if (!str)
 		return (0);
 	i = 0;
-	while (stri[i])
+	while (str[i])
 	{
-		if (stri[i] == (char)c)
+		if (str[i] == (char)c)
 			return (1);
 		i++;
 	}
 	return (0);
 }
 
-char	*ft_getrest(char **full_str)
+char	*append_to(char *buffer, char *to_append)
 {
 	int		i;
-	int		j;
-	char	*restof;
+	char	*new_str;
 
-	i = 0;
-	while ((*full_str)[i] && (*full_str)[i] != '\n')
-		i++;
-	if (!(*full_str)[i])
-		return (NULL);
-	restof = (char *)malloc(sizeof(char) * (ft_strlen(*full_str) - i + 1));
-	if (!restof)
-		return (NULL);
-	i++;
-	j = 0;
-	while ((*full_str)[i])
-		restof[j++] = (*full_str)[i++];
-	restof[j] = '\0';
-	return (restof);
-}
-
-char *append_to(char *statica_str, char *buff)
-{
-    int		i;
-    char	*new_str;
-
-    if (!statica_str)
+	if (!buffer)
 	{
-        statica_str = (char *)malloc(sizeof(char));
-        if (!statica_str)
-            return (NULL);
-        statica_str[0] = '\0';
-    }
-    new_str = (char *)malloc(ft_strlen(statica_str) + ft_strlen(buff) + 1);
-    if (!new_str)
-        return (free(statica_str), NULL);
-    i = 0;
-    while (statica_str[i])
-	{
-        new_str[i] = statica_str[i];
-        i++;
-    }
-    i = 0;
-    while (buff[i])
-	{
-        new_str[ft_strlen(statica_str) + i] = buff[i];
-        i++;
-    }
-    new_str[ft_strlen(statica_str) + ft_strlen(buff)] = '\0';
-    free(statica_str);
-    return (new_str);
+		buffer = (char *)malloc(sizeof(char));
+		if (!buffer)
+			return (NULL);
+		buffer[0] = '\0';
+	}
+	new_str = (char *)malloc(ft_strlen(buffer) + ft_strlen(to_append) + 1);
+	if (!new_str)
+		return (free(buffer), NULL);
+	i = -1;
+	while (buffer[++i])
+		new_str[i] = buffer[i];
+	i = -1;
+	while (to_append[++i])
+		new_str[ft_strlen(buffer) + i] = to_append[i];
+	new_str[ft_strlen(buffer) + ft_strlen(to_append)] = '\0';
+	free(buffer);
+	return (new_str);
 }
