@@ -6,6 +6,9 @@
 # include <string.h>
 # include <stdio.h>
 # include <fcntl.h>
+# ifndef BUFFER_SIZE
+#  define BUFFER_S3IZE 42
+# endif
 
 char	*get_next_line(int fd);
 char	*get_remaining(char **full_str);
